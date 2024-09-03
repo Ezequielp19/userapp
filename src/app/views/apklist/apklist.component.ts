@@ -98,6 +98,10 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { HttpClient } from '@angular/common/http';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+
+
+
 
 @Component({
   selector: 'app-apk-list',
@@ -142,23 +146,36 @@ export class ApkListComponent implements OnInit {
   }
 
   downloadApk(url: string, fileName: string) {
-    if (this.platform.is('android') || this.platform.is('ios')) {
-      const path = `${this.file.externalDataDirectory}${fileName}.apk`;
+  if (this.platform.is('android') || this.platform.is('ios')) {
+    const filePath = `${Directory.Data}/${fileName}.apk`;
 
-      this.http.get(url, { responseType: 'blob' }).subscribe((data: Blob) => {
-        this.file.writeFile(this.file.externalDataDirectory, `${fileName}.apk`, data, { replace: true })
-          .then(() => {
-            console.log('Archivo descargado correctamente:', path);
-            // Opción para abrir el archivo directamente si es necesario
-            // this.fileOpener.open(path, 'application/vnd.android.package-archive');
-          })
-          .catch(error => {
-            console.error('Error al escribir el archivo:', error);
+    this.http.get(url, { responseType: 'blob' }).subscribe(async (data: Blob) => {
+      try {
+        // Convert Blob to base64
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64Data = reader.result as string;
+
+          // Save file
+          await Filesystem.writeFile({
+            path: `${fileName}.apk`,
+            data: base64Data,
+            directory: Directory.Data
           });
-      });
-    } else {
-      window.open(url, '_system');
-    }
+
+          // Optionally open file
+          // await this.fileOpener.open(filePath, 'application/vnd.android.package-archive');
+
+          console.log('Archivo descargado correctamente:', filePath);
+        };
+        reader.readAsDataURL(data);
+      } catch (error) {
+        console.error('Error al escribir el archivo:', error);
+      }
+    });
   }
-  
+
+  }
+
+
 }
