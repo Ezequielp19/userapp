@@ -15,6 +15,7 @@ import { File } from '@awesome-cordova-plugins/file/ngx'; // Importa File
 import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importa HttpClient
 
 import { Filesystem, Directory, Encoding, FilesystemEncoding } from '@capacitor/filesystem';
+import { FileOpener } from '@awesome-cordova-plugins/file-opener2/ngx';
 
 
 
@@ -25,6 +26,8 @@ import { Filesystem, Directory, Encoding, FilesystemEncoding } from '@capacitor/
   imports: [IonicModule, CommonModule, FormsModule,HttpClientModule],
   templateUrl: './apklist.component.html',
   styleUrls: ['./apklist.component.scss'],
+providers: [FileOpener], 
+
 })
 export class ApkListComponent implements OnInit {
   apks$: Observable<Apk[]>;
