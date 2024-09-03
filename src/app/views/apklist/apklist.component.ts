@@ -60,18 +60,14 @@ export class ApkListComponent implements OnInit {
     this.categoryFilter$.next(this.selectedCategory);
   }
 
- async downloadApk(url: string) {
-    if (this.platform.is('android') && this.isAndroidTV()) {
-      try {
-        // Abre el enlace en el navegador del dispositivo
-        await Browser.open({ url });
-      } catch (error) {
-        console.error('Error al abrir el navegador:', error);
-      }
-    } else {
-      console.warn('Este proceso de descarga es solo para Android TV.');
-    }
+async downloadApk(url: string) {
+  try {
+    // Abre el enlace en el navegador del dispositivo
+    await Browser.open({ url });
+  } catch (error) {
+    console.error('Error al abrir el navegador:', error);
   }
+}
 
   isAndroidTV(): boolean {
     return this.platform.is('android') && (navigator.userAgent.includes('TV') || navigator.userAgent.includes('AFT'));
