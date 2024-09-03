@@ -158,6 +158,8 @@ export class ApkListComponent implements OnInit {
 async downloadAndOpenApk(url: string, fileName: string) {
   if (this.platform.is('android')) {
     try {
+      alert('Descargando APK...');
+
       const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
       const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
 
@@ -169,25 +171,22 @@ async downloadAndOpenApk(url: string, fileName: string) {
         recursive: true
       });
 
-      console.log('Archivo descargado correctamente:', filePath);
+      alert('APK descargado correctamente');
 
-      // Abrir el APK para su instalación
       const fileUri = await Filesystem.getUri({
         path: filePath,
         directory: Directory.Data
       });
 
-      // Usa el plugin para abrir el archivo APK
       if (this.platform.is('android')) {
-        // Si `FileOpenerService` no está funcionando, utiliza el siguiente código para abrir el APK
-        // (Descomenta la línea correspondiente para usar el plugin)
         await this.fileOpener.open(fileUri.uri, 'application/vnd.android.package-archive');
       }
     } catch (error) {
+      alert('Error al descargar o abrir el archivo');
       console.error('Error al descargar o abrir el archivo:', error);
     }
   } else {
-    console.warn('El plugin FileOpener solo está disponible en plataformas nativas.');
+    alert('El plugin FileOpener solo está disponible en plataformas nativas.');
   }
 }
 
