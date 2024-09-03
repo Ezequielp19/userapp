@@ -60,14 +60,60 @@ export class ApkListComponent implements OnInit {
     this.categoryFilter$.next(this.selectedCategory);
   }
 
-async downloadApk(url: string) {
-  try {
+// async downloadApk(url: string) {
+//   try {
 
-    await Browser.open({ url });
-  } catch (error) {
-    console.error('Error al abrir el navegador:', error);
+//     await Browser.open({ url });
+//   } catch (error) {
+//     console.error('Error al abrir el navegador:', error);
+//   }
+// }
+
+//   isAndroidTV(): boolean {
+//     return this.platform.is('android') && (navigator.userAgent.includes('TV') || navigator.userAgent.includes('AFT'));
+//   }
+
+ async downloadAndInstallApk(url: string) {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const fileName = url.split('/').pop();
+        const filePath = this.file.dataDirectory + fileName;
+
+        // Descargar el archivo APK
+        const response = await this.http.get(url, { responseType: 'blob' }).toPromise();
+        const base64Data = await this.convertBlobToBase64(response);
+
+        await Filesystem.writeFile({
+          path: fileName!,
+          data: base64Data as string,
+          directory: Directory.Documents,
+          recursive: true,
+        });
+
+        console.log('APK descargado exitosamente.');
+
+        // Abre el archivo APK para la instalación
+        this.fileOpener.open(filePath, 'application/vnd.android.package-archive')
+          .then(() => console.log('APK abierto para instalación'))
+          .catch((error) => console.error('Error al abrir el APK:', error));
+      } else {
+        console.warn('La descarga e instalación automática solo está disponible en plataformas nativas.');
+      }
+    } catch (error) {
+      console.error('Error al descargar o instalar el APK:', error);
+    }
   }
-}
+
+  private convertBlobToBase64(blob: Blob): Promise<string | ArrayBuffer | null> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.readAsDataURL(blob);
+    });
+  }
 
   isAndroidTV(): boolean {
     return this.platform.is('android') && (navigator.userAgent.includes('TV') || navigator.userAgent.includes('AFT'));
