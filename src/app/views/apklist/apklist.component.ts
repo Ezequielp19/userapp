@@ -52,10 +52,11 @@ export class ApkListComponent implements OnInit {
     this.categoryFilter$.next(this.selectedCategory);
   }
 
+
   async downloadAndInstallApk(url: string) {
     try {
       const fileName = url.split('/').pop()!;
-      const filePath = `${Filesystem.getUri({ directory: Directory.Data, path: fileName })}`;
+      const filePath = `${Directory.Data}/${fileName}`;
 
       // Descarga el APK usando HttpClient
       const response = await this.http.get(url, { responseType: 'blob' }).toPromise();
@@ -64,14 +65,21 @@ export class ApkListComponent implements OnInit {
       // Guarda el archivo APK
       await Filesystem.writeFile({
         path: fileName,
-        data: blob,
+        data: blob,  // Usa directamente el Blob aquí
         directory: Directory.Data
       });
 
-      // Abre el archivo APK
-      await Browser.open({ url: filePath });
+      // Genera la URL del archivo para la instalación
+      const fileUri = await Filesystem.getUri({
+        path: fileName,
+        directory: Directory.Data
+      });
+
+      // Inicia la instalación del APK
+      await Browser.open({ url: fileUri.uri });
     } catch (error) {
-      console.error('Error al descargar o abrir el APK:', error);
+      console.error('Error al descargar o instalar el APK:', error);
     }
   }
+  
 }
