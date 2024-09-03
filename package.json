@@ -35,6 +35,7 @@
     "@firebase/storage": "^0.13.0",
     "@ionic/angular": "^7.5.0",
     "cordova-plugin-file": "^8.1.0",
+    "cordova-plugin-file-opener2": "^4.0.0",
     "cordova-plugin-file-transfer": "^2.0.0",
     "ionicons": "^7.2.1",
     "rxjs": "~7.8.0",
