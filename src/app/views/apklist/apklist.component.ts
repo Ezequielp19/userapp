@@ -181,7 +181,7 @@ async downloadAndOpenApk(url: string, fileName: string) {
       if (this.platform.is('android')) {
         // Si `FileOpenerService` no está funcionando, utiliza el siguiente código para abrir el APK
         // (Descomenta la línea correspondiente para usar el plugin)
-        // await this.fileOpener.open(fileUri.uri, 'application/vnd.android.package-archive');
+        await this.fileOpener.open(fileUri.uri, 'application/vnd.android.package-archive');
       }
     } catch (error) {
       console.error('Error al descargar o abrir el archivo:', error);
