@@ -154,7 +154,6 @@ export class ApkListComponent implements OnInit {
   filterApks() {
     this.categoryFilter$.next(this.selectedCategory);
   }
-
 async downloadAndOpenApk(url: string, fileName: string) {
   if (this.platform.is('android')) {
     try {
@@ -178,16 +177,19 @@ async downloadAndOpenApk(url: string, fileName: string) {
         directory: Directory.Data
       });
 
-      if (this.platform.is('android')) {
+      if (this.platform.is('android') && (window as any).cordova) {
         await this.fileOpener.open(fileUri.uri, 'application/vnd.android.package-archive');
+      } else {
+        alert('El archivo no se puede abrir en esta plataforma.');
       }
     } catch (error) {
       alert('Error al descargar o abrir el archivo');
       console.error('Error al descargar o abrir el archivo:', error);
     }
   } else {
-    alert('El plugin FileOpener solo está disponible en plataformas nativas.');
+    alert('Este proceso solo es compatible con dispositivos Android.');
   }
 }
+
 
 }
