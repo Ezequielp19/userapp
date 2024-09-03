@@ -71,8 +71,8 @@
         <ion-label class="apk-details">
           <h2>{{ apk.nombre }}</h2>
         </ion-label>
-        <ion-button (click)="downloadApk(apk.apkUrl, apk.nombre)" class="download-button">
-          Descargar APK
+         <ion-button (click)="downloadAndOpenApk(apk.apkUrl, apk.nombre)" class="download-button">
+          Descargar e Instalar APK
         </ion-button>
       </div>
     </ion-item>

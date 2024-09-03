@@ -99,6 +99,12 @@ import { Router } from '@angular/router';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { HttpClient } from '@angular/common/http';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { FileOpenerService } from 'src/file-opener.service';
+
+import { FileOpener } from '@capacitor-community/file-opener';
+
+
+
 
 
 
@@ -123,7 +129,11 @@ export class ApkListComponent implements OnInit {
     private router: Router,
     private file: File,
     private http: HttpClient,
-    private platform: Platform
+    private platform: Platform,
+      private fileOpener: FileOpenerService,
+
+
+
   ) {}
 
   ngOnInit() {
@@ -145,37 +155,31 @@ export class ApkListComponent implements OnInit {
     this.categoryFilter$.next(this.selectedCategory);
   }
 
-  downloadApk(url: string, fileName: string) {
-  if (this.platform.is('android') || this.platform.is('ios')) {
-    const filePath = `${Directory.Data}/${fileName}.apk`;
-
-    this.http.get(url, { responseType: 'blob' }).subscribe(async (data: Blob) => {
+ async downloadAndOpenApk(url: string, fileName: string) {
+    if (this.platform.is('android')) {
       try {
-        // Convert Blob to base64
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64Data = reader.result as string;
+        const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
+        const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
 
-          // Save file
-          await Filesystem.writeFile({
-            path: `${fileName}.apk`,
-            data: base64Data,
-            directory: Directory.Data
-          });
+        const filePath = `${fileName}.apk`;
+        await Filesystem.writeFile({
+          path: filePath,
+          data: blob,  // Usa Blob en lugar de ArrayBuffer
+          directory: Directory.Data,
+          recursive: true
+        });
 
-          // Optionally open file
-          // await this.fileOpener.open(filePath, 'application/vnd.android.package-archive');
+        console.log('Archivo descargado correctamente:', filePath);
 
-          console.log('Archivo descargado correctamente:', filePath);
-        };
-        reader.readAsDataURL(data);
+        // Abre el archivo APK en Android
+        await FileOpener.open({
+          filePath: `${Directory.Data}/${filePath}`,
+          contentType: 'application/vnd.android.package-archive'
+        });
       } catch (error) {
-        console.error('Error al escribir el archivo:', error);
+        console.error('Error al descargar o abrir el archivo:', error);
       }
-    });
+    }
   }
-
-  }
-
 
 }
