@@ -106,6 +106,9 @@ import { FileOpenerService } from 'src/file-opener.service';
 
 
 
+
+
+
 @Component({
   selector: 'app-apk-list',
   standalone: true,
@@ -166,28 +169,94 @@ export class ApkListComponent implements OnInit {
   }
 
 
-  async downloadApk(url: string, fileName: string) {
-    if (this.platform.is('android')) {
-      try {
-        // Descarga el archivo en formato arraybuffer
-        const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
-        const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
+  // async downloadApk(url: string, fileName: string) {
+  //   if (this.platform.is('android')) {
+  //     try {
+  //       // Descarga el archivo en formato arraybuffer
+  //       const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
+  //       const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
 
-        const filePath = `${fileName}.apk`;
-        await Filesystem.writeFile({
-          path: filePath,
-          data: blob,
-          directory: Directory.ExternalStorage
-        });
+  //       const filePath = `${fileName}.apk`;
+  //       await Filesystem.writeFile({
+  //         path: filePath,
+  //         data: blob,
+  //         directory: Directory.ExternalStorage
+  //       });
 
-        // Aquí podrías mostrar una notificación o mensaje si lo deseas
-        console.log('APK descargado correctamente');
+  //       // Aquí podrías mostrar una notificación o mensaje si lo deseas
+  //       console.log('APK descargado correctamente');
 
-      } catch (error) {
-        console.error('Error al descargar el archivo:', error);
+  //     } catch (error) {
+  //       console.error('Error al descargar el archivo:', error);
+  //     }
+  //   } else {
+  //     console.warn('Este proceso solo es compatible con dispositivos Android.');
+  //   }
+  // }
+
+
+   async downloadApk(url: string, fileName: string) {
+  if (this.platform.is('android')) {
+    let downloadAlert: HTMLIonAlertElement;
+
+    try {
+      // Muestra una alerta indicando que la descarga está en progreso
+      downloadAlert = await this.alertController.create({
+        header: 'Descargando',
+        message: 'La descarga del APK está en progreso...',
+        backdropDismiss: false,
+      });
+      await downloadAlert.present();
+
+      // Descarga el archivo en formato arraybuffer
+      const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
+      const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
+
+      // Guarda el archivo en el directorio de Descargas del dispositivo
+      const filePath = `Download/${fileName}.apk`;
+      await Filesystem.writeFile({
+        path: filePath,
+        data: blob,
+        directory: Directory.External,
+      });
+
+      // Actualiza la alerta para indicar que la descarga se ha completado
+      await downloadAlert.dismiss();  // Cierra la alerta de progreso
+      const successAlert = await this.alertController.create({
+        header: 'Descarga completada',
+        message: `El APK se ha descargado correctamente en la carpeta de Descargas (${filePath}).`,
+        buttons: ['OK'],
+      });
+      await successAlert.present();
+
+      console.log('APK descargado correctamente');
+    } catch (error) {
+      // Cierra la alerta de progreso si hay un error
+      if (downloadAlert) {
+        await downloadAlert.dismiss();
       }
-    } else {
-      console.warn('Este proceso solo es compatible con dispositivos Android.');
+
+      // Muestra una alerta indicando que hubo un error durante la descarga
+      const errorAlert = await this.alertController.create({
+        header: 'Error',
+        message: 'Hubo un error al descargar el APK.',
+        buttons: ['OK'],
+      });
+      await errorAlert.present();
+
+      console.error('Error al descargar el archivo:', error);
     }
+  } else {
+    const warningAlert = await this.alertController.create({
+      header: 'Advertencia',
+      message: 'Este proceso solo es compatible con dispositivos Android.',
+      buttons: ['OK'],
+    });
+    await warningAlert.present();
   }
 }
+
+
+
+}
+
