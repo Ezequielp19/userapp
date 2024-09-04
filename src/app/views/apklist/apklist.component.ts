@@ -87,6 +87,8 @@
 
 
 import { IonicModule, Platform } from '@ionic/angular';
+import { AlertController,IonHeader, IonSelectOption, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, IonCard, IonInput, IonSpinner, IonButtons, IonButton, IonIcon, IonImg, IonCol, IonRow, IonBackButton, IonGrid } from '@ionic/angular/standalone';
+
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FirestoreService } from '../../common/services/firestore.service';
@@ -112,7 +114,7 @@ import { FileOpener } from '@capacitor-community/file-opener';
 @Component({
   selector: 'app-apk-list',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [CommonModule,IonSelectOption, FormsModule,IonHeader, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, IonCard, IonInput, IonSpinner, IonButtons, IonButton, IonIcon, IonImg, IonCol, IonRow, IonBackButton, IonGrid],
   templateUrl: './apklist.component.html',
   styleUrls: ['./apklist.component.scss'],
 })
