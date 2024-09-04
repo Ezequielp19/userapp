@@ -108,6 +108,9 @@ import { Browser } from '@capacitor/browser';
 
 
 
+import { Capacitor } from '@capacitor/core';
+import { Diagnostic } from '@awesome-cordova-plugins/diagnostic/ngx';
+
 
 
 
@@ -139,8 +142,10 @@ export class ApkListComponent implements OnInit {
     private http: HttpClient,
     private platform: Platform,
     private fileOpener: FileOpenerService,
-    private alertController: AlertController
-  ) {
+    private alertController: AlertController,
+    private diagnostic: Diagnostic
+
+  )    {      this.checkPermissions();
      this.form = this.fb.group({
       selectedCategory: new FormControl(''),
     });
@@ -149,7 +154,9 @@ export class ApkListComponent implements OnInit {
   selectedCategoryControl = new FormControl('');
 
 
-  ngOnInit() {
+  async ngOnInit() {
+   
+
     this.apks$ = this.firestoreService.getApks();
     this.categorias$ = this.firestoreService.getCategorias();
 
@@ -159,6 +166,16 @@ export class ApkListComponent implements OnInit {
       )
     );
   }
+
+    async checkPermissions() {
+    try {
+      const status = await this.diagnostic.getLocationAuthorizationStatus();
+      console.log('Diagnostic status:', status);
+    } catch (error) {
+      console.error('Diagnostic error:', error);
+    }
+  }
+
 
   navigateToDetail(apkId: string) {
     this.router.navigate(['/apk', apkId]);
@@ -238,38 +255,72 @@ export class ApkListComponent implements OnInit {
 
 
   async downloadAndOpenApk(url: string, fileName: string) {
-    try {
-      console.log(`Iniciando descarga del APK desde: ${url} con nombre de archivo: ${fileName}`);
+  let downloadAlert: HTMLIonAlertElement;
 
-      // Descargar el archivo en formato blob
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Error al descargar el archivo: ${response.statusText}`);
-      }
-      const blob = await response.blob();
+  try {
+    downloadAlert = await this.alertController.create({
+      header: 'Descargando',
+      message: 'La descarga del APK está en progreso...',
+      backdropDismiss: false,
+    });
+    await downloadAlert.present();
 
-      // Convertir el blob a base64 (si es necesario, opcional)
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob); // Convierte a base64
-      });
-      const base64Data = await base64Promise;
-      const base64DataString = base64Data.split(',')[1]; // Extrae la parte base64
-
-      // Guarda el archivo en el directorio de Descargas del dispositivo
-      const filePath = `${fileName}.apk`;
-      await Filesystem.writeFile({
-        path: filePath,
-        data: base64DataString,
-        directory: Directory.External
-      });
-
-      console.log('APK descargado y guardado correctamente en el directorio de Descargas');
-
-    } catch (error) {
-      console.error('Error al descargar o guardar el archivo APK:', error);
+    console.log('Iniciando descarga del APK');
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error al descargar el archivo: ${response.statusText}`);
     }
+    const blob = await response.blob();
+    console.log('Archivo descargado, convirtiendo a base64');
+
+    const base64Promise = new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const base64Data = await base64Promise;
+    const base64DataString = base64Data.split(',')[1];
+    console.log('Conversión a base64 completa, guardando archivo');
+
+    const filePath = `Download/${fileName}.apk`;
+    await Filesystem.writeFile({
+      path: filePath,
+      data: base64DataString,
+      directory: Directory.External,
+    });
+
+    console.log('Archivo guardado en:', filePath);
+
+    await downloadAlert.dismiss();
+    const successAlert = await this.alertController.create({
+      header: 'Descarga completada',
+      message: `El APK se ha descargado correctamente en la carpeta de Descargas (${filePath}).`,
+      buttons: ['OK'],
+    });
+    await successAlert.present();
+
+    const fileUri = (await Filesystem.getUri({ directory: Directory.External, path: filePath })).uri;
+    console.log('Abriendo archivo con FileOpener:', fileUri);
+
+    await this.fileOpener.open(fileUri, 'application/vnd.android.package-archive');
+
+    console.log(`APK descargado y guardado correctamente en: ${filePath}`);
+  } catch (error) {
+    console.error('Error en el proceso:', error);
+
+    if (downloadAlert) {
+      await downloadAlert.dismiss();
+    }
+
+    const errorAlert = await this.alertController.create({
+      header: 'Error',
+      message: 'Hubo un error al descargar el APK.',
+      buttons: ['OK'],
+    });
+    await errorAlert.present();
   }
+}
+
 }
