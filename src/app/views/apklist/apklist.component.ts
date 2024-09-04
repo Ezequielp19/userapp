@@ -85,7 +85,6 @@
 // }
 
 
-
 import { IonicModule, Platform } from '@ionic/angular';
 import { AlertController, IonHeader, IonSelectOption, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, IonCard, IonInput, IonSpinner, IonButtons, IonButton, IonIcon, IonImg, IonCol, IonRow, IonBackButton, IonGrid } from '@ionic/angular/standalone';
 
@@ -118,14 +117,14 @@ export class ApkListComponent implements OnInit {
 
   private categoryFilter$ = new BehaviorSubject<string>('');
 
- constructor(
-  private firestoreService: FirestoreService,
-  private router: Router,
-  private http: HttpClient,
-  private platform: Platform,
-  private fileOpener: FileOpenerService,
-  private alertController: AlertController
-) {}
+  constructor(
+    private firestoreService: FirestoreService,
+    private router: Router,
+    private http: HttpClient,
+    private platform: Platform,
+    private fileOpener: FileOpenerService,
+    private alertController: AlertController
+  ) {}
 
   ngOnInit() {
     this.apks$ = this.firestoreService.getApks();
@@ -146,7 +145,7 @@ export class ApkListComponent implements OnInit {
     this.categoryFilter$.next(this.selectedCategory);
   }
 
- async downloadAndOpenApk(url: string, fileName: string) {
+  async downloadAndOpenApk(url: string, fileName: string) {
     if (this.platform.is('android')) {
       try {
         const alert = await this.alertController.create({
@@ -195,7 +194,4 @@ export class ApkListComponent implements OnInit {
       await alert.present();
     }
   }
-
-
-
 }
