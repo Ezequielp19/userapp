@@ -103,6 +103,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { FileOpenerService } from 'src/file-opener.service';
 
+import { Browser } from '@capacitor/browser';
 
 
 
@@ -169,93 +170,93 @@ export class ApkListComponent implements OnInit {
   }
 
 
-  // async downloadApk(url: string, fileName: string) {
-  //   if (this.platform.is('android')) {
-  //     try {
-  //       // Descarga el archivo en formato arraybuffer
-  //       const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
-  //       const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
-
-  //       const filePath = `${fileName}.apk`;
-  //       await Filesystem.writeFile({
-  //         path: filePath,
-  //         data: blob,
-  //         directory: Directory.ExternalStorage
-  //       });
-
-  //       // Aquí podrías mostrar una notificación o mensaje si lo deseas
-  //       console.log('APK descargado correctamente');
-
-  //     } catch (error) {
-  //       console.error('Error al descargar el archivo:', error);
-  //     }
-  //   } else {
-  //     console.warn('Este proceso solo es compatible con dispositivos Android.');
-  //   }
-  // }
 
 
-   async downloadApk(url: string, fileName: string) {
-  if (this.platform.is('android')) {
-    let downloadAlert: HTMLIonAlertElement;
+//    async downloadApk(url: string, fileName: string) {
+//   if (this.platform.is('android')) {
+//     let downloadAlert: HTMLIonAlertElement;
 
+//     try {
+
+//       downloadAlert = await this.alertController.create({
+//         header: 'Descargando',
+//         message: 'La descarga del APK está en progreso...',
+//         backdropDismiss: false,
+//       });
+//       await downloadAlert.present();
+
+
+//       const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
+//       const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
+
+//       const filePath = `Download/${fileName}.apk`;
+//       await Filesystem.writeFile({
+//         path: filePath,
+//         data: blob,
+//         directory: Directory.External,
+//       });
+
+
+//       await downloadAlert.dismiss();
+//       const successAlert = await this.alertController.create({
+//         header: 'Descarga completada',
+//         message: `El APK se ha descargado correctamente en la carpeta de Descargas (${filePath}).`,
+//         buttons: ['OK'],
+//       });
+//       await successAlert.present();
+
+//       console.log('APK descargado correctamente');
+//     } catch (error) {
+
+//       if (downloadAlert) {
+//         await downloadAlert.dismiss();
+//       }
+
+
+//       const errorAlert = await this.alertController.create({
+//         header: 'Error',
+//         message: 'Hubo un error al descargar el APK.',
+//         buttons: ['OK'],
+//       });
+//       await errorAlert.present();
+
+//       console.error('Error al descargar el archivo:', error);
+//     }
+//   } else {
+//     const warningAlert = await this.alertController.create({
+//       header: 'Advertencia',
+//       message: 'Este proceso solo es compatible con dispositivos Android.',
+//       buttons: ['OK'],
+//     });
+//     await warningAlert.present();
+//   }
+// }
+
+
+ async downloadApk(url: string) {
     try {
-      // Muestra una alerta indicando que la descarga está en progreso
-      downloadAlert = await this.alertController.create({
-        header: 'Descargando',
-        message: 'La descarga del APK está en progreso...',
-        backdropDismiss: false,
-      });
-      await downloadAlert.present();
+      // Abre la URL del APK en el navegador
+      await Browser.open({ url });
 
-      // Descarga el archivo en formato arraybuffer
-      const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
-      const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
-
-      // Guarda el archivo en el directorio de Descargas del dispositivo
-      const filePath = `Download/${fileName}.apk`;
-      await Filesystem.writeFile({
-        path: filePath,
-        data: blob,
-        directory: Directory.External,
-      });
-
-      // Actualiza la alerta para indicar que la descarga se ha completado
-      await downloadAlert.dismiss();  // Cierra la alerta de progreso
+      // Mostrar un mensaje indicando que la descarga ha comenzado
       const successAlert = await this.alertController.create({
-        header: 'Descarga completada',
-        message: `El APK se ha descargado correctamente en la carpeta de Descargas (${filePath}).`,
+        header: 'Descarga iniciada',
+        message: 'El APK se está descargando. Verifica la barra de notificaciones.',
         buttons: ['OK'],
       });
       await successAlert.present();
 
-      console.log('APK descargado correctamente');
     } catch (error) {
-      // Cierra la alerta de progreso si hay un error
-      if (downloadAlert) {
-        await downloadAlert.dismiss();
-      }
-
-      // Muestra una alerta indicando que hubo un error durante la descarga
+      // Mostrar un mensaje de error si ocurre un problema al abrir la URL
       const errorAlert = await this.alertController.create({
         header: 'Error',
-        message: 'Hubo un error al descargar el APK.',
+        message: 'Hubo un problema al iniciar la descarga.',
         buttons: ['OK'],
       });
       await errorAlert.present();
-
-      console.error('Error al descargar el archivo:', error);
+      console.error('Error al abrir la URL:', error);
     }
-  } else {
-    const warningAlert = await this.alertController.create({
-      header: 'Advertencia',
-      message: 'Este proceso solo es compatible con dispositivos Android.',
-      buttons: ['OK'],
-    });
-    await warningAlert.present();
   }
-}
-
 
 
 }
