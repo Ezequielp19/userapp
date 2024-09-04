@@ -125,6 +125,7 @@ export class ApkListComponent implements OnInit {
     private http: HttpClient,
     private platform: Platform,
       private fileOpener: FileOpenerService,
+    private alertController: AlertController
 
 
 
@@ -149,54 +150,55 @@ export class ApkListComponent implements OnInit {
     this.categoryFilter$.next(this.selectedCategory);
   }
 
-async downloadAndOpenApk(url: string, fileName: string) {
-  if (this.platform.is('android')) {
-    try {
-      alert('Descargando APK...');
+ async downloadAndOpenApk(url: string, fileName: string) {
+    if (this.platform.is('android')) {
+      try {
+        const alert = await this.alertController.create({
+          header: 'Descargando',
+          message: 'Descargando APK...',
+          backdropDismiss: false
+        });
+        await alert.present();
 
-      // Descarga el archivo en formato arraybuffer
-      const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
-      const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
+        // Descarga el archivo en formato arraybuffer
+        const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
+        const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
 
-      // Convierte el Blob a Base64
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-
-        const filePath = `Download/${fileName}.apk`;
-        // Extrae solo la parte Base64 de la cadena data URL
-        const base64String = base64data.split(',')[1];
-
+        const filePath = `${fileName}.apk`;
         await Filesystem.writeFile({
           path: filePath,
-          data: base64String,  // Usa directamente el Base64 string aquí
-          directory: Directory.ExternalStorage,
-          recursive: true
+          data: blob,
+          directory: Directory.ExternalStorage
         });
 
-        alert('APK descargado correctamente');
+        alert.message = 'APK descargado correctamente';
+        setTimeout(() => alert.dismiss(), 2000); // Cierra la alerta después de 2 segundos
 
         const fileUri = await Filesystem.getUri({
           path: filePath,
           directory: Directory.ExternalStorage
         });
 
-        if (this.platform.is('android') && (window as any).cordova) {
-          // Abre el APK usando el FileOpener plugin
-          await this.fileOpener.open(fileUri.uri, 'application/vnd.android.package-archive');
-        } else {
-          alert('El archivo no se puede abrir en esta plataforma.');
-        }
-      };
-    } catch (error) {
-      alert('Error al descargar o abrir el archivo');
-      console.error('Error al descargar o abrir el archivo:', error);
+        // Abre el APK usando el FileOpener plugin
+        await this.fileOpener.open(fileUri.uri, 'application/vnd.android.package-archive');
+      } catch (error) {
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message: 'Error al descargar o abrir el archivo',
+          buttons: ['OK']
+        });
+        await alert.present();
+        console.error('Error al descargar o abrir el archivo:', error);
+      }
+    } else {
+      const alert = await this.alertController.create({
+        header: 'Advertencia',
+        message: 'Este proceso solo es compatible con dispositivos Android.',
+        buttons: ['OK']
+      });
+      await alert.present();
     }
-  } else {
-    alert('Este proceso solo es compatible con dispositivos Android.');
   }
-}
 
 
 
