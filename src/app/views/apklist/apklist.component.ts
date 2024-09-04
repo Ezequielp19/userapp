@@ -87,7 +87,7 @@
 
 
 import { IonicModule, Platform } from '@ionic/angular';
-import { AlertController,IonHeader, IonSelectOption, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, IonCard, IonInput, IonSpinner, IonButtons, IonButton, IonIcon, IonImg, IonCol, IonRow, IonBackButton, IonGrid } from '@ionic/angular/standalone';
+import { AlertController, IonHeader, IonSelectOption, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, IonCard, IonInput, IonSpinner, IonButtons, IonButton, IonIcon, IonImg, IonCol, IonRow, IonBackButton, IonGrid } from '@ionic/angular/standalone';
 
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
@@ -98,23 +98,15 @@ import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { File } from '@awesome-cordova-plugins/file/ngx';
 import { HttpClient } from '@angular/common/http';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { FileOpenerService } from 'src/file-opener.service';
-
 import { FileOpener } from '@capacitor-community/file-opener';
-
-
-
-
-
-
+import { FileOpenerService } from 'src/file-opener.service';
 
 @Component({
   selector: 'app-apk-list',
   standalone: true,
-  imports: [CommonModule,IonSelectOption, FormsModule,IonHeader, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, IonCard, IonInput, IonSpinner, IonButtons, IonButton, IonIcon, IonImg, IonCol, IonRow, IonBackButton, IonGrid],
+  imports: [CommonModule, IonSelectOption, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, IonCard, IonInput, IonSpinner, IonButtons, IonButton, IonIcon, IonImg, IonCol, IonRow, IonBackButton, IonGrid],
   templateUrl: './apklist.component.html',
   styleUrls: ['./apklist.component.scss'],
 })
