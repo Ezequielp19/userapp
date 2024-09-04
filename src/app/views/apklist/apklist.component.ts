@@ -95,17 +95,21 @@ import { Apk } from '../../common/models/apk.model';
 import { Categoria } from './../../common/models/categoria.models';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { FormsModule } from '@angular/forms';
+import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
+
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { FileOpenerService } from 'src/file-opener.service';
 
+
+
+
 @Component({
   selector: 'app-apk-list',
   standalone: true,
-  imports: [CommonModule, IonSelectOption, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, IonCard, IonInput, IonSpinner, IonButtons, IonButton, IonIcon, IonImg, IonCol, IonRow, IonBackButton, IonGrid],
+  imports: [CommonModule, IonicModule],
   templateUrl: './apklist.component.html',
   styleUrls: ['./apklist.component.scss'],
 })
@@ -117,14 +121,25 @@ export class ApkListComponent implements OnInit {
 
   private categoryFilter$ = new BehaviorSubject<string>('');
 
+      form: FormGroup;
+
+
   constructor(
+    private fb: FormBuilder,
     private firestoreService: FirestoreService,
     private router: Router,
     private http: HttpClient,
     private platform: Platform,
     private fileOpener: FileOpenerService,
     private alertController: AlertController
-  ) {}
+  ) {
+     this.form = this.fb.group({
+      selectedCategory: new FormControl(''),
+    });
+  }
+
+  selectedCategoryControl = new FormControl('');
+
 
   ngOnInit() {
     this.apks$ = this.firestoreService.getApks();
@@ -141,20 +156,19 @@ export class ApkListComponent implements OnInit {
     this.router.navigate(['/apk', apkId]);
   }
 
-  filterApks() {
-    this.categoryFilter$.next(this.selectedCategory);
+  // filterApks() {
+  //   this.categoryFilter$.next(this.selectedCategory);
+  // }
+
+    filterApks() {
+    const selectedCategory = this.form.get('selectedCategory')?.value;
+    this.categoryFilter$.next(selectedCategory);
   }
 
-  async downloadAndOpenApk(url: string, fileName: string) {
+
+  async downloadApk(url: string, fileName: string) {
     if (this.platform.is('android')) {
       try {
-        const alert = await this.alertController.create({
-          header: 'Descargando',
-          message: 'Descargando APK...',
-          backdropDismiss: false
-        });
-        await alert.present();
-
         // Descarga el archivo en formato arraybuffer
         const response = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
         const blob = new Blob([response], { type: 'application/vnd.android.package-archive' });
@@ -166,32 +180,14 @@ export class ApkListComponent implements OnInit {
           directory: Directory.ExternalStorage
         });
 
-        alert.message = 'APK descargado correctamente';
-        setTimeout(() => alert.dismiss(), 2000); // Cierra la alerta después de 2 segundos
+        // Aquí podrías mostrar una notificación o mensaje si lo deseas
+        console.log('APK descargado correctamente');
 
-        const fileUri = await Filesystem.getUri({
-          path: filePath,
-          directory: Directory.ExternalStorage
-        });
-
-        // Abre el APK usando el FileOpener plugin
-        await this.fileOpener.open(fileUri.uri, 'application/vnd.android.package-archive');
       } catch (error) {
-        const alert = await this.alertController.create({
-          header: 'Error',
-          message: 'Error al descargar o abrir el archivo',
-          buttons: ['OK']
-        });
-        await alert.present();
-        console.error('Error al descargar o abrir el archivo:', error);
+        console.error('Error al descargar el archivo:', error);
       }
     } else {
-      const alert = await this.alertController.create({
-        header: 'Advertencia',
-        message: 'Este proceso solo es compatible con dispositivos Android.',
-        buttons: ['OK']
-      });
-      await alert.present();
+      console.warn('Este proceso solo es compatible con dispositivos Android.');
     }
   }
 }

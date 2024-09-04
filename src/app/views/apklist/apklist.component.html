@@ -1,4 +1,3 @@
-<!--
 <ion-header>
   <ion-toolbar>
     <ion-title class="ion-text-center">Lista de APKs</ion-title>
@@ -11,12 +10,13 @@
 <ion-content>
   <ion-item>
     <ion-label>Categoría</ion-label>
-    <ion-select [(ngModel)]="selectedCategory" (ionChange)="filterApks()">
-      <ion-select-option value="">Todas</ion-select-option>
-      <ion-select-option *ngFor="let categoria of categorias$ | async" [value]="categoria.id">
-        {{ categoria.nombre }}
-      </ion-select-option>
-    </ion-select>
+   <ion-select formControlName="selectedCategory" (ionChange)="filterApks()">
+  <ion-select-option value="">Todas</ion-select-option>
+  <ion-select-option *ngFor="let categoria of categorias$ | async" [value]="categoria.id">
+    {{ categoria.nombre }}
+  </ion-select-option>
+</ion-select>
+
   </ion-item>
 
   <ion-list>
@@ -26,23 +26,17 @@
       [ngStyle]="{ 'background-image': 'url(' + apk.imagenUrl + ')' }"
       tabindex="0"
     >
-
       <div class="apk-overlay">
         <ion-label class="apk-details">
           <h2>{{ apk.nombre }}</h2>
         </ion-label>
- <ion-button (click)="downloadAndInstallApk(apk.apkUrl)" class="download-button">
-          Descargar e Instalar APK
-        </ion-button>
-
-
-
+         <ion-button (click)="downloadApk(apk.apkUrl, apk.nombre)">Descargar</ion-button>
       </div>
     </ion-item>
   </ion-list>
-</ion-content> -->
+</ion-content>
 
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar>
     <ion-title class="ion-text-center">Lista de APKs</ion-title>
   </ion-toolbar>
@@ -51,16 +45,18 @@
 <ion-content>
   <ion-item>
     <ion-label>Categoría</ion-label>
-    <ion-select [(ngModel)]="selectedCategory" (ionChange)="filterApks()">
-      <ion-select-option value="">Todas</ion-select-option>
 
-      <!-- Usa ng-container para evitar múltiples bindings -->
-      <ng-container *ngIf="categorias$ | async as categorias">
-        <ion-select-option *ngFor="let categoria of categorias" [value]="categoria.id">
-          {{ categoria.nombre }}
-        </ion-select-option>
-      </ng-container>
-    </ion-select>
+
+  <ion-select [formControl]="form.get('selectedCategory')" (ionChange)="filterApks()">
+  <ion-select-option value="">Todas</ion-select-option>
+  <ng-container *ngIf="categorias$ | async as categorias">
+    <ion-select-option *ngFor="let categoria of categorias" [value]="categoria.id">
+      {{ categoria.nombre }}
+    </ion-select-option>
+  </ng-container>
+</ion-select>
+
+
   </ion-item>
 
   <ion-list>
@@ -81,3 +77,4 @@
     </ion-item>
   </ion-list>
 </ion-content>
+ -->
