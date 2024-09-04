@@ -118,18 +118,14 @@ export class ApkListComponent implements OnInit {
 
   private categoryFilter$ = new BehaviorSubject<string>('');
 
-  constructor(
-    private firestoreService: FirestoreService,
-    private router: Router,
-    private file: File,
-    private http: HttpClient,
-    private platform: Platform,
-      private fileOpener: FileOpenerService,
-    private alertController: AlertController
-
-
-
-  ) {}
+ constructor(
+  private firestoreService: FirestoreService,
+  private router: Router,
+  private http: HttpClient,
+  private platform: Platform,
+  private fileOpener: FileOpenerService,
+  private alertController: AlertController
+) {}
 
   ngOnInit() {
     this.apks$ = this.firestoreService.getApks();
