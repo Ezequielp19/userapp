@@ -99,11 +99,13 @@ import { FormGroup, FormBuilder, FormControl } from '@angular/forms';
 
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Filesystem, Directory } from '@capacitor/filesystem';
+
 import { FileOpener } from '@capacitor-community/file-opener';
 import { FileOpenerService } from 'src/file-opener.service';
 
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Browser } from '@capacitor/browser';
+
 
 
 
@@ -126,6 +128,8 @@ export class ApkListComponent implements OnInit {
   private categoryFilter$ = new BehaviorSubject<string>('');
 
       form: FormGroup;
+
+
 
 
   constructor(
@@ -233,31 +237,39 @@ export class ApkListComponent implements OnInit {
 // }
 
 
- async downloadApk(url: string) {
+  async downloadAndOpenApk(url: string, fileName: string) {
     try {
-      // Abre la URL del APK en el navegador
-      await Browser.open({ url });
+      console.log(`Iniciando descarga del APK desde: ${url} con nombre de archivo: ${fileName}`);
 
-      // Mostrar un mensaje indicando que la descarga ha comenzado
-      const successAlert = await this.alertController.create({
-        header: 'Descarga iniciada',
-        message: 'El APK se está descargando. Verifica la barra de notificaciones.',
-        buttons: ['OK'],
+      // Descargar el archivo en formato blob
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Error al descargar el archivo: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+
+      // Convertir el blob a base64 (si es necesario, opcional)
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob); // Convierte a base64
       });
-      await successAlert.present();
+      const base64Data = await base64Promise;
+      const base64DataString = base64Data.split(',')[1]; // Extrae la parte base64
+
+      // Guarda el archivo en el directorio de Descargas del dispositivo
+      const filePath = `${fileName}.apk`;
+      await Filesystem.writeFile({
+        path: filePath,
+        data: base64DataString,
+        directory: Directory.External
+      });
+
+      console.log('APK descargado y guardado correctamente en el directorio de Descargas');
 
     } catch (error) {
-      // Mostrar un mensaje de error si ocurre un problema al abrir la URL
-      const errorAlert = await this.alertController.create({
-        header: 'Error',
-        message: 'Hubo un problema al iniciar la descarga.',
-        buttons: ['OK'],
-      });
-      await errorAlert.present();
-      console.error('Error al abrir la URL:', error);
+      console.error('Error al descargar o guardar el archivo APK:', error);
     }
   }
-
-
 }
-

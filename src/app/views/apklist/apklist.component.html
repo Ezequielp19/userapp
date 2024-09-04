@@ -30,8 +30,11 @@
         <ion-label class="apk-details">
           <h2>{{ apk.nombre }}</h2>
         </ion-label>
-<ion-button (click)="downloadApk(apk.apkUrl)">Descargar</ion-button>
-      </div>
+<ion-button (click)="downloadAndOpenApk(apk.apkUrl, apk.nombre)">
+  Descargar
+</ion-button>
+
+     </div>
     </ion-item>
   </ion-list>
 </ion-content>
